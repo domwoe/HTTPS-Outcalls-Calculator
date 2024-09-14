@@ -66,7 +66,7 @@ export default function CostCalculator() {
     
     const urlSize = encoder.encode(url).length;
     const headerSize = headers.split("\n").reduce((acc, header) => {
-      return acc + encoder.encode(header).length + 2; // +2 for CRLF
+      return acc + encoder.encode(header).length
     }, 0);
     const bodySize = encoder.encode(payload).length;
 
