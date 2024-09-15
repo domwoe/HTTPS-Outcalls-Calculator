@@ -218,14 +218,14 @@ export default function CostCalculator() {
               <p>
                 Estimated Cost: TCycles{" "}
                 {calculateCost(
-                  simulatedRequestSize,
-                  simulatedResponseSize,
+                  requestSize,
+                  responseSize,
                   nodes
                 ).toFixed(6)}
               </p>
               <h3 className="text-2xl font-bold">
                 Estimated Cost: $
-                {calculateCost(requestSize, responseSize, nodes)}
+                {(calculateCost(requestSize, responseSize, nodes) * xdrToUsdRate).toFixed(6)}
               </h3>
             </div>
           </TabsContent>
