@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
-import { InfoCircledIcon } from "@radix-ui/react-icons";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export default function CostCalculator() {
   const [requestSize, setRequestSize] = useState(0);
@@ -39,6 +39,8 @@ export default function CostCalculator() {
   const HTTP_REQUEST_QUADRATIC_BASELINE_FEE = 60_000;
   const HTTP_REQUEST_PER_BYTE_FEE = 400;
   const HTTP_RESPONSE_PER_BYTE_FEE = 800;
+
+  const MAX_RESPONSE_BYTES = 2_000_000;
 
   useEffect(() => {
     fetch("https://api.exchangerate-api.com/v4/latest/XDR")
@@ -63,10 +65,10 @@ export default function CostCalculator() {
 
   const calculateRequestSize = () => {
     const encoder = new TextEncoder();
-    
+
     const urlSize = encoder.encode(url).length;
     const headerSize = headers.split("\n").reduce((acc, header) => {
-      return acc + encoder.encode(header).length
+      return acc + encoder.encode(header).length;
     }, 0);
     const bodySize = encoder.encode(payload).length;
 
@@ -123,10 +125,10 @@ export default function CostCalculator() {
         options.body = payload;
       }
 
-      const workerUrl =
+      const proxyUrl =
         "https://outcalls-proxy.dom-woe.workers.dev/?url=" +
         encodeURIComponent(url);
-      const response = await fetch(workerUrl, options);
+      const response = await fetch(proxyUrl, options);
       const responseText = await response.text(); // Get the raw response text
       const fullResponse = {
         status: `${response.status} ${response.statusText}`,
@@ -147,6 +149,8 @@ export default function CostCalculator() {
     }
   }, [url, headers, requestType, payload]);
 
+  const isSmallViewport = useMediaQuery("(max-width: 640px)");
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -155,8 +159,18 @@ export default function CostCalculator() {
       <CardContent>
         <Tabs defaultValue="simulation" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="simulation">Request Simulation</TabsTrigger>
-            <TabsTrigger value="slider">Slider Calculator</TabsTrigger>
+            <TabsTrigger
+              value="simulation"
+              className={isSmallViewport ? "text-sm px-2 py-1" : ""}
+            >
+              {isSmallViewport ? "Simulate" : "Request Simulation"}
+            </TabsTrigger>
+            <TabsTrigger
+              value="slider"
+              className={isSmallViewport ? "text-sm px-2 py-1" : ""}
+            >
+              {isSmallViewport ? "Calculate" : "Slider Calculator"}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="slider" className="space-y-4">
             <div className="space-y-2">
@@ -201,6 +215,14 @@ export default function CostCalculator() {
               </Select>
             </div>
             <div className="pt-4">
+              <p>
+                Estimated Cost: TCycles{" "}
+                {calculateCost(
+                  simulatedRequestSize,
+                  simulatedResponseSize,
+                  nodes
+                ).toFixed(6)}
+              </p>
               <h3 className="text-2xl font-bold">
                 Estimated Cost: $
                 {calculateCost(requestSize, responseSize, nodes)}
@@ -229,26 +251,28 @@ export default function CostCalculator() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="headers">Headers (one per line)</Label>
-              <Textarea
-                id="headers"
-                value={headers}
-                onChange={(e) => setHeaders(e.target.value)}
-                placeholder="Content-Type: application/json"
-                rows={3}
-              />
-            </div>
             {requestType.toLowerCase() === "post" && (
-              <div className="space-y-2">
-                <Label htmlFor="payload">Payload</Label>
-                <Textarea
-                  id="payload"
-                  value={payload}
-                  onChange={(e) => setPayload(e.target.value)}
-                  placeholder="Enter payload here"
-                  rows={4}
-                />
+              <div>
+                <div className="space-y-2">
+                  <Label htmlFor="headers">Headers (one per line)</Label>
+                  <Textarea
+                    id="headers"
+                    value={headers}
+                    onChange={(e) => setHeaders(e.target.value)}
+                    placeholder="Content-Type: application/json"
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="payload">Payload</Label>
+                  <Textarea
+                    id="payload"
+                    value={payload}
+                    onChange={(e) => setPayload(e.target.value)}
+                    placeholder="Enter payload here"
+                    rows={4}
+                  />
+                </div>
               </div>
             )}
             <div className="space-y-2">
@@ -307,6 +331,33 @@ export default function CostCalculator() {
                   ) * xdrToUsdRate
                 ).toFixed(6)}
               </h3>
+              <span className="text-sm text-gray-200">
+                {" "}
+                with max response size $
+                {(
+                  calculateCost(
+                    simulatedRequestSize,
+                    MAX_RESPONSE_BYTES,
+                    nodes
+                  ) * xdrToUsdRate
+                ).toFixed(6)}{" "}
+                (Faktor{" "}
+                {(
+                  (calculateCost(
+                    simulatedRequestSize,
+                    MAX_RESPONSE_BYTES,
+                    nodes
+                  ) *
+                    xdrToUsdRate) /
+                  (calculateCost(
+                    simulatedRequestSize,
+                    simulatedResponseSize,
+                    nodes
+                  ) *
+                    xdrToUsdRate)
+                ).toFixed(0)}
+                x)
+              </span>
             </div>
             <div className="space-y-2">
               <Label htmlFor="response">Response</Label>
