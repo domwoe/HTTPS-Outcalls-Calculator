@@ -34,6 +34,9 @@ export default function CostCalculator() {
   const [xdrToUsdRate, setXdrToUsdRate] = useState(1);
   const [ipv6Support, setIpv6Support] = useState<boolean | null>(null);
 
+  // Add this array at the top of your component
+  const nodeOptions = [13, 28, 34];
+
   // https://github.com/dfinity/ic/blob/d4ee25b0865e89d3eaac13a60f0016d5e3296b31/rs/config/src/subnet_config.rs#L484
   const HTTP_REQUEST_LINEAR_BASELINE_FEE = 3_000_000;
   const HTTP_REQUEST_QUADRATIC_BASELINE_FEE = 60_000;
@@ -209,23 +212,24 @@ export default function CostCalculator() {
                   <SelectValue placeholder="Select number of nodes in subnet" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="13">13 nodes</SelectItem>
-                  <SelectItem value="28">28 nodes</SelectItem>
+                  {nodeOptions.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {option} nodes
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="pt-4">
               <p>
                 Estimated Cost: TCycles{" "}
-                {calculateCost(
-                  requestSize,
-                  responseSize,
-                  nodes
-                ).toFixed(6)}
+                {calculateCost(requestSize, responseSize, nodes).toFixed(6)}
               </p>
               <h3 className="text-2xl font-bold">
                 Estimated Cost: $
-                {(calculateCost(requestSize, responseSize, nodes) * xdrToUsdRate).toFixed(6)}
+                {(
+                  calculateCost(requestSize, responseSize, nodes) * xdrToUsdRate
+                ).toFixed(6)}
               </h3>
             </div>
           </TabsContent>
@@ -285,8 +289,11 @@ export default function CostCalculator() {
                   <SelectValue placeholder="Select number of nodes" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="13">13 nodes</SelectItem>
-                  <SelectItem value="28">28 nodes</SelectItem>
+                  {nodeOptions.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {option} nodes
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -331,7 +338,7 @@ export default function CostCalculator() {
                   ) * xdrToUsdRate
                 ).toFixed(6)}
               </h3>
-              <span className="text-sm text-gray-200">
+              <span className="text-sm text-gray-600">
                 {" "}
                 with max response size $
                 {(
@@ -340,23 +347,7 @@ export default function CostCalculator() {
                     MAX_RESPONSE_BYTES,
                     nodes
                   ) * xdrToUsdRate
-                ).toFixed(6)}{" "}
-                (Faktor{" "}
-                {(
-                  (calculateCost(
-                    simulatedRequestSize,
-                    MAX_RESPONSE_BYTES,
-                    nodes
-                  ) *
-                    xdrToUsdRate) /
-                  (calculateCost(
-                    simulatedRequestSize,
-                    simulatedResponseSize,
-                    nodes
-                  ) *
-                    xdrToUsdRate)
-                ).toFixed(0)}
-                x)
+                ).toFixed(6)}
               </span>
             </div>
             <div className="space-y-2">

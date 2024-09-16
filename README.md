@@ -14,6 +14,11 @@ This calculator helps developers to estimate the costs of HTTPS outcalls on the 
 - Estimate costs based on a given request and response
 - Check IPv6 support of a given URL 
 
+## Potential improvements
+
+- Make several calls and show the diff to make it easier to create a transform function
+- Automatically suggest a transform funtion in Rust or Motoko based on the diff
+
 ## Development
 
 1. Clone the repository
