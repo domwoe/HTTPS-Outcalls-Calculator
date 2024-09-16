@@ -45,6 +45,10 @@ export default function CostCalculator() {
 
   const MAX_RESPONSE_BYTES = 2_000_000;
 
+  // These costs are based on a 13 node subnet
+  const INGRESS_BASE_FEE = 1_200_000;
+  const INGRESS_PER_BYTE_FEE = 2000;
+
   useEffect(() => {
     fetch("https://api.exchangerate-api.com/v4/latest/XDR")
       .then((response) => response.json())
@@ -64,6 +68,13 @@ export default function CostCalculator() {
         nodeCount) /
       1_000_000_000_000;
     return costInXDR;
+  };
+
+  const calculateIngressCost = (req: number, nodeCount: number) => {
+    return (
+      (((INGRESS_BASE_FEE + req * INGRESS_PER_BYTE_FEE) / 13) * nodeCount) /
+      1_000_000_000_000
+    );
   };
 
   const calculateRequestSize = () => {
@@ -231,6 +242,21 @@ export default function CostCalculator() {
                   calculateCost(requestSize, responseSize, nodes) * xdrToUsdRate
                 ).toFixed(6)}
               </h3>
+            </div>
+
+            <div className="pt-4 text-sm">
+              Compare to ingress cost with same response size as input $
+              {(
+                calculateIngressCost(responseSize, nodes) * xdrToUsdRate
+              ).toFixed(6)}{" "}
+              (Faktor{" "}
+              {(
+                1 /
+                ((calculateIngressCost(responseSize, nodes) * xdrToUsdRate) /
+                  (calculateCost(requestSize, responseSize, nodes) *
+                    xdrToUsdRate))
+              ).toFixed(0)}{" "}
+              cheaper)
             </div>
           </TabsContent>
           <TabsContent value="simulation" className="space-y-4">

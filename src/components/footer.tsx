@@ -1,3 +1,5 @@
+import { FaGithub } from 'react-icons/fa';
+
 export const Footer = () => {
   return (
     <footer className="mx-auto max-w-screen-2xl py-8 px-8 md:px-24 h-24 flex flex-col items-center justify-center dark:text-white">
@@ -11,11 +13,19 @@ export const Footer = () => {
       </a>
       <a
         href="https://juno.build"
-        className="text-center text-sm hover:text-lavender-blue-500 active:text-lavender-blue-400"
+        className="text-center text-sm hover:text-lavender-blue-500 active:text-lavender-blue-400 mb-2"
         target="_blank"
         rel="noopener noreferrer"
       >
         Built with Juno
+      </a>
+      <a
+        href="https://github.com/domwoe/HTTPS-Outcalls-Calculator"
+        className="text-center text-sm hover:text-lavender-blue-500 active:text-lavender-blue-400 flex items-center"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <FaGithub className="mr-1" /> View on GitHub
       </a>
     </footer>
   );
